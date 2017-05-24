@@ -11,11 +11,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
 var port *string
 var logDir string
+var locker = new(sync.Mutex)
 
 func main() {
 	port = flag.String("p", "8010", "port to listen")
@@ -31,6 +33,8 @@ func main() {
 	}
 }
 func logToFile(logFile string, content string) {
+	locker.Lock()
+	defer locker.Unlock()
 	fd, _ := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	fdTime := time.Now().Format("2006-01-02 15:04:05")
 	fdContent := strings.Join([]string{"======", fdTime, "=====\n", content, "\n"}, "")
@@ -48,7 +52,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	if !matched || len(uri) > 30 {
 		return
 	}
-	month := time.Now().Format("0000-00")
+	month := time.Now().Format("2017-01")
 	ext := ".log"
 	path := logDir
 	filename := uri
