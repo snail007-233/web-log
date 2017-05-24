@@ -1,5 +1,7 @@
 package main
 
+//go:generate go build  -o bin/web-log_linux-amd64 web-log.go
+
 import (
 	"flag"
 	"io/ioutil"
