@@ -17,7 +17,7 @@ import (
 
 var port *string
 var logDir string
-var locker = new(sync.Mutex)
+var locker = make(map[string]*sync.Mutex)
 
 func main() {
 	port = flag.String("p", "8010", "port to listen")
@@ -26,15 +26,21 @@ func main() {
 	log.Println("listen on :" + *port)
 	logDir, _ = filepath.Abs(*logDirArg)
 
-	http.HandleFunc("/", handle)               //设置访问的路由
-	err := http.ListenAndServe(":"+*port, nil) //设置监听的端口
+	http.HandleFunc("/", handle)
+	err := http.ListenAndServe(":"+*port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
+func getLocker(key string) *sync.Mutex {
+	if _, ok := locker[key]; !ok {
+		locker[key] = new(sync.Mutex)
+	}
+	return locker[key]
+}
 func logToFile(logFile string, content string) {
-	locker.Lock()
-	defer locker.Unlock()
+	getLocker(logFile).Lock()
+	defer getLocker(logFile).Unlock()
 	fd, _ := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	fdTime := time.Now().Format("2006-01-02 15:04:05")
 	fdContent := strings.Join([]string{"======", fdTime, "=====\n", content, "\n"}, "")
