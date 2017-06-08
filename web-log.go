@@ -58,7 +58,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 	if !matched || len(uri) > 30 {
 		return
 	}
-	month := time.Now().Format("2017-01")
+	month := time.Now().Format("2006-01")
 	ext := ".log"
 	path := logDir
 	filename := uri
